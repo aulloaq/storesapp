@@ -1,3 +1,6 @@
+def apikeyPropertiesFile = rootProject.file("apikey.properties")
+def apikeyProperties = new Properties()
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'

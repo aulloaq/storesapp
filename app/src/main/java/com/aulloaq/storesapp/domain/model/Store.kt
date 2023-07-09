@@ -1,4 +1,4 @@
-package com.aulloaq.storesapp.model
+package com.aulloaq.storesapp.domain.model
 
 import com.google.gson.annotations.SerializedName
 

@@ -30,9 +30,11 @@ class StoreListActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-
+                    StoreList(uiState = uiState, viewModel = viewModel)
                 }
             }
         }
+        viewModel.getStoreList()
     }
+
 }

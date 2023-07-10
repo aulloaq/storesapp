@@ -18,9 +18,9 @@ data class AttributesResponse(
 )
 
 data class LinkResponse(
-    val previous: String?,
-    val next: String?,
-    val first: String?,
-    val last: String?,
-    val self: String?
+    val previous: String? = "",
+    val next: String? = "",
+    val first: String? = "",
+    val last: String? = "",
+    val self: String? = ""
 )

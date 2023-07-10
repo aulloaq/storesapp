@@ -1,14 +1,15 @@
 package com.aulloaq.storesapp.viewmodel
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.aulloaq.storesapp.data.response.ApiResponse
+import com.aulloaq.storesapp.data.response.LinkResponse
+import com.aulloaq.storesapp.data.response.StoreResponse
 import com.aulloaq.storesapp.di.CoroutineDispatcherIO
 import com.aulloaq.storesapp.domain.usecase.GetStoreListUseCase
 import com.aulloaq.storesapp.utils.HandlerResult
 import com.aulloaq.storesapp.view.ApiErrorState
 import com.aulloaq.storesapp.view.StoreListUiState
-import com.aulloaq.storesapp.view.StoreResponseState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,15 +25,23 @@ class StoreListViewModel @Inject constructor(
     private val dispatcherIO: CoroutineDispatcher
 ) : ViewModel(){
 
+    private var links: LinkResponse? = null
     private val _uiState = MutableStateFlow(StoreListUiState())
     val uiState: StateFlow<StoreListUiState> get() = _uiState.asStateFlow()
+    val newsList = mutableStateListOf<StoreResponse>()
 
-    fun getStoreList() {
+    init {
+        getStoreList()
+    }
+
+    private fun getStoreList(getStoreListParams: GetStoreListUseCase.GetStoreListParams = GetStoreListUseCase.GetStoreListParams()) {
         showLoading()
         viewModelScope.launch(dispatcherIO) {
-            when (val result = getStoreListUseCase.invoke(GetStoreListUseCase.GetStoreListParams())) {
+            when (val result = getStoreListUseCase.invoke(getStoreListParams)) {
                 is HandlerResult.Success -> {
-                    setStoreResponse(result.value)
+                    links = result.value.links
+                    newsList.addAll(result.value.data!!)
+                    showLoading(false)
                 }
                 is HandlerResult.Failure -> {
                     result.exception.message?.let { setApiErrorState(it) }
@@ -43,16 +52,8 @@ class StoreListViewModel @Inject constructor(
         }
     }
 
-    private fun setStoreResponse(apiResponse: ApiResponse){
-        _uiState.update {
-            it.copy(
-                showLoading = false,
-                storeResponseState = StoreResponseState.StoreResponse(apiResponse = apiResponse)
-            )
-        }
-    }
 
-    fun showLoading(showLoading: Boolean = true) {
+    private fun showLoading(showLoading: Boolean = true) {
         _uiState.update {
             it.copy(
                 showLoading = showLoading
@@ -66,6 +67,23 @@ class StoreListViewModel @Inject constructor(
                 showLoading = false,
                 apiErrorState = ApiErrorState.ApiError(message)
             )
+        }
+    }
+
+    fun loadItems(){
+        if (links?.next != links?.last) {
+            val indexPerPage = links?.next?.indexOf("=")
+            lateinit var perPage: String
+            lateinit var page: String
+            lateinit var substr: String
+            if (indexPerPage != null) {
+                substr = links?.next?.substring(indexPerPage + 1).toString()
+                perPage = substr.substring(0, 2)
+                page = substr.substring(substr.indexOf("=") + 1)
+
+                getStoreList(GetStoreListUseCase.GetStoreListParams(perPage = perPage.toInt(), page = page.toInt()))
+
+            }
         }
     }
 

@@ -2,13 +2,14 @@ package com.aulloaq.storesapp.utils
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.*
+import com.aulloaq.storesapp.domain.usecase.GetStoreListUseCase
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun OnBottomReached(
     listState: LazyListState,
     buffer: Int = 2,
-    loadMore: () -> Unit
+    onLoad: () -> Unit
 ){
     val loadMore = remember {
         derivedStateOf {
@@ -24,7 +25,7 @@ fun OnBottomReached(
         snapshotFlow { loadMore.value }
             .distinctUntilChanged()
             .collect {
-                loadMore()
+                onLoad()
             }
     }
 }

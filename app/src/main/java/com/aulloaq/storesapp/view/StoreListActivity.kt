@@ -1,6 +1,7 @@
 package com.aulloaq.storesapp.view
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -25,6 +26,13 @@ class StoreListActivity : ComponentActivity() {
 
             val uiState by viewModel.uiState.collectAsState()
 
+            when (val result = uiState.apiErrorState){
+                is ApiErrorState.Idle -> Unit
+                is ApiErrorState.ApiError -> {
+                    showMessage(result.string)
+                }
+            }
+
             StoresappTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -34,7 +42,10 @@ class StoreListActivity : ComponentActivity() {
                 }
             }
         }
-        viewModel.getStoreList()
     }
 
+
+    private fun showMessage(message: String){
+        Toast.makeText(baseContext, message, Toast.LENGTH_LONG).show()
+    }
 }
